@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.yrec.yhyhsmodelservice.mappers.RaPHourRtMapper" >
+	<!-- 当前mapper下所有语句开启二级缓存 -->
+	<cache eviction="LRU" flushInterval="3600000" size="102400" readOnly="true"/>
+	<!--    /**
+     * 方法描述: 根据站码列表, 开始日期, 结束日期
+     *  找到这段范围内的雨量站逐小时的降雨信息
+     * @author yanglichen
+     * @date 2020-07-14 10:27
+     * @param stcdList 站码列表
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 这段范围内的雨量站逐小时的降雨信息
+     **/
+    List<RaPHourRt> getRapHourRtByStcdListAndDate(
+            @Param("STCD_LIST") List<String> stcdList,
+            @Param("START_DATE") Date startDate,
+            @Param("END_DATE") Date endDate);-->
+	<select id="getRapHourRtListByStcdListAndDate" resultType="cn.yrec.yhyhsmodelservice.model.RaPHourRt">
+		SELECT
+			STCD, STNM,
+			CDATE, RF,
+			INTVTIME
+		FROM
+			ra_p_hour_rt
+		WHERE
+			STCD IN
+				<foreach collection="STCD_LIST" item="STCD" open="(" close=")" separator="," index="index">
+					#{STCD}
+				</foreach>
+		AND
+			CDATE BETWEEN #{START_DATE} AND #{END_DATE}
+		ORDER BY
+			CDATE
+		DESC
+	</select>
+
+
+	<!--    /**
+     * 方法描述: 根据站码和日期,得到某日,某站码的所有记录
+     * 次日0:00 > 当前 >= 当日0:00
+     * @author yanglichen
+     * @date 2020-07-14 10:43
+     * @param stcd 站码
+     * @param startDate 开始日期 (次日00:00)
+     * @param endDate 结束日期 (当日00:00)
+     * @return 到某日,某站码的所有记录
+     **/
+    List<RaPHourRt> getRaPHourRtListByStcdAndDate(
+            @Param("STCD") String stcd,
+            @Param("START_DATE") Date startDate,
+            @Param("END_DATE") Date endDate);-->
+	<select id="getRaPHourRtListByStcdAndDate" resultType="cn.yrec.yhyhsmodelservice.model.RaPHourRt">
+		SELECT
+			STCD, STNM,
+			CDATE, RF,
+			INTVTIME
+		FROM
+			ra_p_hour_rt
+		WHERE
+			STCD = #{STCD}
+		AND
+			CDATE &lt; #{END_DATE} AND CDATE &gt;= #{START_DATE}
+		ORDER BY
+			CDATE
+		DESC
+	</select>
+</mapper>

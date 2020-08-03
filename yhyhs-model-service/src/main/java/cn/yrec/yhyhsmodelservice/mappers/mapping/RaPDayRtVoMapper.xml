@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.yrec.yhyhsmodelservice.mappers.RaPDayRtVoMapper" >
+	<!-- 当前mapper下所有语句开启二级缓存 -->
+	<cache eviction="LRU" flushInterval="3600000" size="102400" readOnly="true"/>
+	<!--/** @Description 根据站码和字符串格式的日期,查询一个3表合一信息的逐日雨量站信息
+      * @Param [stcd 站码, dateStr 字符串格式的日期]
+      * @Return java.util.List<cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo>
+      * @Date 7月1日 0001 上午 10:02
+      * @auther yanglichen
+      */
+    List<RaPDayRtVo> getRaPDayRtVoListByStcdAndDateStr(
+            @Param("STCD") String stcd, @Param("DATE") String dateStr);-->
+	<select id="getRaPDayRtVoListByStcdAndDateStr" resultType="cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo">
+		SELECT
+			r.STCD, r.STNM, r.DATE, r.RF,
+			w.AREA,  w.WEIGHT
+		FROM
+			ra_p_day_rt r
+		LEFT JOIN
+			ra_pweight w
+		ON
+			r.STCD = w.STCD
+		JOIN
+			ra_psta p
+		ON
+			w.STCD = p.STCD
+		WHERE
+			r.STCD = #{STCD}
+		AND
+			r.DATE BETWEEN #{RAINFALL_DATE} AND #{CAL_DATE}
+				AND
+			w.YEAR=(
+				SELECT
+					MAX(YEAR)
+				FROM
+					ra_pweight
+				LIMIt 1
+			)
+-- 		ORDER BY
+-- 			r.DATE
+	</select>
+
+	<!--/** @Description 根据雨量站站码列表,查询这段时间内发生降雨的全部雨量站的全部信息
+      * @Param [stcdList 雨量站站码列表, dateStr 开始降雨的时间]
+      * @Return [雨量站1的列表, 雨量站2的列表,雨量站3的列表....]
+      * @Date 7月1日 0001 下午 4:43
+      * @auther yanglichen
+      */
+    List<List<RaPDayRtVo>> getRaPDayRtVoListByStcdListAndDateStr(
+            @Param("STCD_LIST") List<String> stcdList, @Param("DATE") String dateStr);-->
+	<select id="getRaPDayRtVoListByStcdListAndDateStr" resultType="cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo">
+		SELECT
+			r.STCD, r.STNM, r.DATE, r.RF,
+			w.AREA, w.WEIGHT
+		FROM
+			ra_p_day_rt r
+		LEFT JOIN
+			ra_pweight w
+		ON
+			r.STCD = w.STCD
+		JOIN
+			ra_psta p
+		ON
+			w.STCD = p.STCD
+		WHERE
+			r.STCD IN
+			<foreach collection="STCD_LIST" index="index" separator="," open="(" close=")" item="STCD">
+				#{STCD}
+			</foreach>
+		AND
+			r.DATE BETWEEN #{RAINFALL_DATE} AND #{CAL_DATE}
+		AND
+			w.YEAR=(
+				SELECT
+					MAX(YEAR)
+				FROM
+					ra_pweight
+				LIMIt 1
+			)
+-- 		ORDER BY
+-- 			r.DATE
+-- 		DESC
+	</select>
+
+	<!-- /**
+     * 方法描述: 通过站码列表,查询开始日期和结束日期中(包前, 包后)范围内的雨量站的信息
+     * @author yanglichen
+     * @date 2020-07-06 15:18
+     * @param stcdList 站码列表
+     * @param startDate 开始日期 (新日期: 2020/6/30)
+     * @param endDate 结束日期 (15天前的日期: 2020/6/15)
+     * @return 站码列表对应的雨量站在这段时间内的信息
+     **/
+    List<RaPDayRtVo> getRaPDayRtVoListByStcdListAndTwoDate(
+            @Param("STCD_LIST") List<String> stcdList,
+            @Param("START_DATE")Date startDate,
+            @Param("END_DATE")Date endDate);-->
+	<select id="getRaPDayRtVoListByStcdListAndTwoDate" resultType="cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo">
+		SELECT
+			r.STCD, r.STNM, r.DATE, r.RF,
+			w.AREA, w.WEIGHT
+		FROM
+			ra_p_day_rt r
+		LEFT JOIN
+			ra_pweight w
+		ON
+			r.STCD = w.STCD
+		JOIN
+			ra_psta p
+		ON
+			w.STCD = p.STCD
+		<where>
+			r.STCD IN
+			<foreach collection="STCD_LIST" index="index" separator="," open="(" close=")" item="STCD">
+				#{STCD}
+			</foreach>
+		AND
+			r.DATE BETWEEN #{END_DATE} AND #{START_DATE}
+		AND
+			w.YEAR=(
+				SELECT
+					MAX(YEAR)
+				FROM
+					ra_pweight
+				LIMIt 1
+			)
+		</where>
+-- 		ORDER BY
+-- 			DATE
+-- 		DESC
+	</select>
+
+	<!-- /**
+     * 方法描述: 根据站码列表和一个时间得到小于等于这个时间下的所有的信息
+     * @author yanglichen
+     * @date 2020-07-24 09:16
+     * @param stcdList 站码列表
+     * @param startDate 日期
+     * @return <= startDate 的全部信息
+     **/-->
+	<select id="getAllInformation" resultType="cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo">
+		SELECT
+			r.STCD, r.STNM,
+			r.DATE, r.RF,
+			w.AREA, w.WEIGHT
+		FROM
+			ra_p_day_rt r
+		LEFT JOIN
+			ra_pweight w
+		ON
+			r.STCD = w.STCD
+		JOIN
+			ra_psta p
+		ON
+			w.STCD = p.STCD
+		<where>
+			r.STCD IN
+				<foreach collection="STCD_LIST" index="index" separator="," open="(" close=")" item="STCD">
+					#{STCD}
+				</foreach>
+			AND
+				r.DATE &lt;=#{START_DATE}
+			AND
+				w.YEAR=(
+					SELECT
+						MAX(YEAR)
+					FROM
+						ra_pweight
+					LIMIT 1
+				)
+		</where>
+	</select>
+
+
+</mapper>
