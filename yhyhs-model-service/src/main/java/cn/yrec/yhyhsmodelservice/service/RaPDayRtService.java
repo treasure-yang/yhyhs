@@ -78,31 +78,6 @@ public interface RaPDayRtService {
 
 
     /**
-     * 方法描述: 根据站码列表, 降雨起始日, 降雨结束的阈值, 找到降雨的截止日期
-     * @author yanglichen
-     * @date 2020-07-16 17:32
-     * @param stcdList 站码列表
-     * @param rainfallDate 降雨起始日
-     * @param rainfallThreshold 降雨的阈值
-     * @param timeInterval 降雨间隔时间
-     * @return 降雨结束的日期
-     **/
-//    Date getRainfallEndDayByStcdListAndRainfallDate(
-//            List<String> stcdList, Date rainfallDate, Double rainfallThreshold, Integer timeInterval);
-
-    /**
-     * 方法描述: 得到开始降雨的日期
-     * @author yanglichen
-     * @date 2020-07-17 18:38
-     * @param stcdList 站码列表
-     * @param rainfallThreshold 降雨的阈值
-     * @param timeInterval 降雨间隔时间
-     * @param date 倒推时间
-     * @return
-     **/
-//    Date getLastRainfallDate( List<String> stcdList, Double rainfallThreshold, Integer timeInterval, Date date);
-
-    /**
      * 方法描述: 查询日期小于当前日期 00:00之前,降雨量小于给定值的站码列表的的日期对应的计数项
      * 并将结果封装成Map
     * @author yanglichen

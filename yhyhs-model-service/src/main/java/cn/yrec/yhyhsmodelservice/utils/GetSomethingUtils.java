@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 该类主要为单元测试提供一下数据
+ * 该类主要为工厂类,为全局提供一些对象
+ *  例如:测试用的站码列表,MyBatis缓存用到的SqlSession等
  *      例如:站码列表, 雨量站列表 等
  * @Date 2020/07/01 上午 10:28
  * @Created by yanglichen
@@ -36,7 +37,7 @@ public class GetSomethingUtils{
 
     private static GetSomethingUtils getSomethingUtils;
 
-    static SqlSessionFactory sqlSessionFactory = null;
+    private static SqlSessionFactory sqlSessionFactory = null;
 
 
     /**

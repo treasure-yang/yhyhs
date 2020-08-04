@@ -13,9 +13,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.text.SimpleDateFormat;
-import java.time.temporal.Temporal;
 import java.util.*;
 
 /**
@@ -105,8 +102,6 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
         Date date = new Date(minTime);
         //列表中最后一个元素所记录的日期，就是降雨开始的日期
         return date;
-//        DateUtils.sortRaPDayRtByDate(raPDayRtList);
-//        return raPDayRtList.get(0).getDate();
     }
 
     /**
@@ -123,9 +118,7 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
     public Date getRainfallDate(
             List<String> stcdList, Double rainfallThreshold, Integer timeInterval, Date date) {
         List<List<RaPDayRt>> raPDayRtLists = getListRaPDayRtListByStringList(stcdList, rainfallThreshold, new Date(date.getTime()));
-        Date resultDate = getLastRainDateByListRaPDayRtListAndTimeInterval(raPDayRtLists, timeInterval);
-//        System.out.println("输出的日期是: "+DateUtils.transformDateTOStr(resultDate));
-        return resultDate;
+        return getLastRainDateByListRaPDayRtListAndTimeInterval(raPDayRtLists, timeInterval);
     }
 
     /**
@@ -168,79 +161,6 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
         }
     }
 
-    /**
-     * 方法描述: 根据站码列表, 降雨起始日, 降雨结束的阈值, 找到降雨的截止日期
-     *
-     * @param stcdList          站码列表
-     * @param rainfallDate      降雨起始日
-     * @param rainfallThreshold 降雨的阈值
-     * @param timeInterval 降雨间隔时间
-     * @return 降雨结束的日期 (7月11还有雨, 7月12没了 :返回7月11日)
-     * @author yanglichen
-     * @date 2020-07-16 17:32
-     **/
-//    @Override
-    public Date getRainfallEndDayByStcdListAndRainfallDate(
-            List<String> stcdList, Date rainfallDate, Double rainfallThreshold, Integer timeInterval) {
-        //降雨的结束的时间
-        Long dateTimes = rainfallDate.getTime();
-        /*死循环
-        * 根据降雨的起始日去往后逐日查询数据库
-        * 如果有一天查不到数据(返回的计数结果为0)
-        * 这一天没有下雨
-        * 如果没有下雨的日期计数超过了降雨时间的控制间隔
-        * 那么就找到了雨停的那一天
-        * 返回降雨日
-        * */
-        //不下雨的天数的计数
-        int noRainfallDayCount = 0;
-        Date tempDate = new Date(rainfallDate.getTime());
-        while(true){
-            Integer count = getRaPDayRtListCountByDate(stcdList, tempDate, rainfallThreshold);
-            if (count==0) {
-                noRainfallDayCount++;
-            }
-            dateTimes += DateUtils.ONE_DAY_MILLI_SECOND;
-            tempDate.setTime(dateTimes);
-            if (noRainfallDayCount >= timeInterval) {
-                //判断返回的日期是不是大于现在今天(用于实时计算)
-                if (tempDate.getTime()>=System.currentTimeMillis()) {
-                    //返回日期大于今天,就将降雨的结束日期设置为今天
-                    tempDate.setTime(System.currentTimeMillis());
-                }
-                return tempDate;
-            }
-        }
-    }
-
-
-//    @Override
-    public Date getLastRainfallDate(List<String> stcdList, Double rainfallThreshold, Integer timeInterval, Date date) {
-        //降雨的起始时间
-        Long dateTimes = date.getTime();
-        /*死循环
-         * 根据降雨的起始日去往前逐日查询数据库
-         * 如果有一天查不到数据(返回的计数结果为0)
-         * 这一天降雨不达标
-         * 如果没有下雨的日期计数超过了降雨时间的控制间隔
-         * 那么就找到了雨停的那一天
-         * 返回降雨日
-         * */
-        //不下雨的天数的计数
-        int noRainfallDayCount = 0;
-        Date tempDate = new Date(date.getTime());
-        while(true){
-            Integer count = getRaPDayRtListCountByDate(stcdList, tempDate, rainfallThreshold);
-            if (count==0) {
-                noRainfallDayCount++;
-            }
-            dateTimes -= DateUtils.ONE_DAY_MILLI_SECOND;
-            tempDate.setTime(dateTimes);
-            if (noRainfallDayCount == timeInterval) {
-                return tempDate;
-            }
-        }
-    }
 
     /**
      * 方法描述: 查询日期小于当前日期 00:00之前,降雨量小于给定值的站码列表的的日期对应的计数项
@@ -348,8 +268,7 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
     @Override
     public Date getEndRainfallDate(Map<Date, Integer> rainfallDateCount) {
         Set<Date> dateSet = rainfallDateCount.keySet();
-        List<Date> dateList = new ArrayList<>();
-        dateList.addAll(dateSet);
+        List<Date> dateList = new ArrayList<>(dateSet);
         long minDateTime = Long.MAX_VALUE;
         for (Date date : dateList) {
             if(date!=null){
@@ -397,14 +316,14 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
         //构造结果集
         List<RaPDayRt> raPDayRtList = new ArrayList<>();
         //遍历雨量站列表的列表
-        raPDayRtsList.forEach(raPDayRts -> {
+        for (List<RaPDayRt> raPDayRts : raPDayRtsList) {
             //得到雨量站记录列表中符合时间间隔条件的雨量站信息
             RaPDayRt raPDayRt = getLastRecordRaPDayRtByListRapDayRtAndTimeInterval(raPDayRts, timeInterval);
             if (raPDayRt!=null) {
                 //添加到结果集中
                 raPDayRtList.add(raPDayRt);
             }
-        });
+        }
         //返回结果集
         return raPDayRtList;
     }
@@ -467,7 +386,7 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
         //查询数据库得到结果级
         List<Map<String, Object>> mapList = raPDayRtMapper.getDatesCountRainfall(stcdList, nowDateNoHour, rainfallThreshold);
         sqlSession.close();
-        mapList.forEach(map->{
+        for (Map<String, Object> map : mapList) {
             Date date = null;
             Integer count = null;
             /*
@@ -483,7 +402,7 @@ public class RaPDayRtServiceImpl implements RaPDayRtService {
                 }
                 dateCountMap.put(date, count);
             }
-        });
+        }
         return dateCountMap;
     }
 }

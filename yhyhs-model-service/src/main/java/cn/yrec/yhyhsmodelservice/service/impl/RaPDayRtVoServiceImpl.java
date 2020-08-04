@@ -1,13 +1,11 @@
 package cn.yrec.yhyhsmodelservice.service.impl;
 
-import cn.yrec.yhyhsmodelservice.mappers.RaPDayRtMapper;
 import cn.yrec.yhyhsmodelservice.mappers.RaPDayRtVoMapper;
 import cn.yrec.yhyhsmodelservice.mappers.RaPHourRtMapper;
 import cn.yrec.yhyhsmodelservice.model.RaPHourRt;
 import cn.yrec.yhyhsmodelservice.model.RaPweight;
 import cn.yrec.yhyhsmodelservice.service.RaPDayRtService;
 import cn.yrec.yhyhsmodelservice.service.RaPDayRtVoService;
-import cn.yrec.yhyhsmodelservice.service.RaPHourRtService;
 import cn.yrec.yhyhsmodelservice.service.RaPweightService;
 import cn.yrec.yhyhsmodelservice.utils.DateUtils;
 import cn.yrec.yhyhsmodelservice.utils.GetSomethingUtils;
@@ -28,10 +26,6 @@ import java.util.*;
  */
 @Service
 public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
-
-//    @Autowired
-//    private RaPDayRtVoMapper raPDayRtVoMapper;
-
 
     @Autowired
     private RaPweightService raPweightService;
@@ -113,22 +107,22 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         //构造用于存放是筛选结果的结果集(第一层List表示日期,第二层List表示每天中雨量站的列表)
         List<List<RaPDayRtVo>> raPDayRtVosList = new ArrayList<>();
         //遍历降雨时间段列表
-        timeZoneForRainfallDays.forEach(rainfallDay->{
+        for (String rainfallDay : timeZoneForRainfallDays) {
             //构造二级List
             List<RaPDayRtVo> dayRaPDayRtVoList = new ArrayList<>();
             //遍历所有的雨量站
-            raPDayRtVoList.forEach(raPDayRtVo -> {
+            for (RaPDayRtVo raPDayRtVo : raPDayRtVoList) {
                 //转换日期格式,用于下一步比较
                 String raPDayRtVoDateStr = DateUtils.transformDateTOStr(raPDayRtVo.getDate());
                 //如果日期相同,并且降雨量大于规定的阈值,就放入列表中
                 if (raPDayRtVoDateStr.equalsIgnoreCase(rainfallDay) && raPDayRtVo.getRf() >= rfThreshold) {
                     dayRaPDayRtVoList.add(raPDayRtVo);
                 }
-            });
+            }
             raPDayRtVosList.add(dayRaPDayRtVoList);
-        });
+        }
         //对筛选结果集中的数据进行求和,并将结果注入到最终的结果集中
-        raPDayRtVosList.forEach(dayRaPDayRtVoList->{
+        for (List<RaPDayRtVo> dayRaPDayRtVoList : raPDayRtVosList) {
             //遍历求和
             double sumArea = 0D;
             for (RaPDayRtVo r : dayRaPDayRtVoList) {
@@ -136,7 +130,7 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
             }
             //添加结果
             daysRainfallArea.add(sumArea);
-        });
+        }
         return daysRainfallArea;
     }
 
@@ -303,14 +297,10 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         //结果
         Double result = 0D;
         List<Double> beforRainfallDaysP = getBeforRainfallDaysP(stcdList, rainfallDate);
-        beforRainfallDaysP.forEach(item->{
-//            System.out.println("每日的P:\t"+item);
-        });
         //遍历,准备累加计算
         for (int i = 0; i < beforRainfallDaysP.size(); i++) {
             //(每日的 * 0.85 )第几天就几次方
             Double dayPn = Math.pow(0.85 , (i+1))* beforRainfallDaysP.get(i);
-//            System.err.println("每日的knp:\t"+dayPn);
             //累加
             result += dayPn;
         }
@@ -397,7 +387,7 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         List<List<RaPDayRtVo>> raPDayRtVosList =
                 TransFormUtils.getListRaPDayRtVoListByStringList(raPDayRtVoList, stcdList);
         //遍历站码列表进行构造外层Map
-        stcdList.forEach(stcd->{
+        for (String stcd : stcdList) {
             //初始化内层Map
             Map<Date, RaPDayRtVo> raPDayRtVoMap = null;
             //遍历按照站码分类的列表
@@ -415,7 +405,7 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
                 }
             }
             allInformationMap.put(stcd, raPDayRtVoMap);
-        });
+        }
         return allInformationMap;
     }
 
@@ -444,25 +434,24 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         // 例如: [2020-07-06, 2020-07-05, 2020-07-04.......2020-06-25]
         List<String> beforRainfall15DaysList =
                 DateUtils.getTimeZoneByStartDayAndEndDay(rainfallDate, endDay);
-//        System.err.println("日期为: " + beforRainfall15DaysList);
         //得到按照时间查询出来的雨量站列表
         List<RaPDayRtVo> raPDayRtVoList = getRaPDayRtVoListByStcdListAndTwoDate(stcdList, rainfallDate);
         //构造用于存放是筛选结果的结果集(第一层List表示日期,第二层List表示每天中雨量站的列表)
         List<List<RaPDayRtVo>> raPDayRtVosList = new ArrayList<>();
         //遍历时间列表做筛选
-        beforRainfall15DaysList.forEach(beforRainfallDay->{
+        for (String beforRainfallDay : beforRainfall15DaysList) {
             //构造二级List 既:用于存放每日雨量站的List
             List<RaPDayRtVo> raPDayRtVos = new ArrayList<>();
             //嵌套遍历
-            raPDayRtVoList.forEach(raPDayRtVo -> {
+            for (RaPDayRtVo raPDayRtVo : raPDayRtVoList) {
                 String dateStr = DateUtils.transformDateTOStr(raPDayRtVo.getDate());
                 //如果日期相同,就放进去
                 if (beforRainfallDay.equalsIgnoreCase(dateStr)) {
                     raPDayRtVos.add(raPDayRtVo);
                 }
-            });
+            }
             raPDayRtVosList.add(raPDayRtVos);
-        });
+        }
         return raPDayRtVosList;
     }
 
@@ -482,10 +471,10 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         //得到雨量站权重信息列表
         List<RaPweight> raPweightList = getRaplaceWeightListByStcdList(stcdList);
         //遍历按日分组的雨量站信息
-        raPDayRtVosList.forEach(raPDayRtVoList -> {
+        for (List<RaPDayRtVo> raPDayRtVoList : raPDayRtVosList) {
             Double dayP = getBeforeRainfallDayPByRaPDayRtVoList(raPDayRtVoList, raPweightList);
             rainfallDaysPList.add(dayP);
-        });
+        }
         return rainfallDaysPList;
     }
 
@@ -552,7 +541,5 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
         sqlSession.close();
         return raPDayRtVoList;
     }
-
-
 
 }

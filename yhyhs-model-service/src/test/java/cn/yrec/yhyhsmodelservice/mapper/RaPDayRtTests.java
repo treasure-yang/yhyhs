@@ -125,8 +125,7 @@ public class RaPDayRtTests {
 
         //排序Map
         Set<Date> dateSet = dateCountMap.keySet();
-        List<Date> dateList = new ArrayList<>();
-        dateList.addAll(dateSet);
+        List<Date> dateList = new ArrayList<>(dateSet);
         long minDateTime = Long.MAX_VALUE;
         for (Date date : dateList) {
             if(date!=null){
