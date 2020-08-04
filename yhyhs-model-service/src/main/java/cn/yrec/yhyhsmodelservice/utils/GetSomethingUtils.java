@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 该类主要为工厂类,为全局提供一些对象
@@ -38,6 +35,8 @@ public class GetSomethingUtils{
     private static GetSomethingUtils getSomethingUtils;
 
     private static SqlSessionFactory sqlSessionFactory = null;
+
+    private static Map<String, Map<Date, RaPDayRtVo>> allInfomationMap = null;
 
 
     /**
@@ -503,14 +502,52 @@ public class GetSomethingUtils{
     }
 
     /**
-     * 方法描述: 根据站码列表得到一个包含所有结果的Map对象
+     * 方法描述: 使用单例模式, 根据站码列表得到一个包含所有结果的Map对象
      * @author yanglichen
      * @date 2020-07-24 15:10
      * @param stcdList 站码列表
      * @return 包含所有结果的Map对象
      **/
     public static Map<String, Map<Date, RaPDayRtVo>> getAllInformationMap(List<String> stcdList){
-        return getSomethingUtils.raPDayRtVoService.getAllRaPDayRtVoInformation(stcdList);
+        //判断Map结果集是否为空
+        if (allInfomationMap == null) {
+            //为空,调用方法,注入属性
+            allInfomationMap = getSomethingUtils.raPDayRtVoService.getAllRaPDayRtVoInformation(stcdList);
+        }
+        /*
+        如果当传入的站码列表发生改变的时候,
+        结果集也应该发生相应的改变
+        要重新根据站码列表构造为结果集注入属性
+        判断站码列表是否改变的依据
+        满足一下任意一个条件即可
+            1.列表长度不一样
+            2.列表内元素不一样
+        */
+        //得到结果集的站码列表
+        Set<String> mapStcdSet = allInfomationMap.keySet();
+        //初始化标识符
+        boolean flage = false;
+        //如果列表长度相同,则遍历当前的map中的站码
+        if (mapStcdSet.size()==stcdList.size()) {
+            for (String stcd : mapStcdSet) {
+                //如果map中的站码有不存在于传入的List中的站码
+                if (!stcdList.contains(stcd)) {
+                    //标志量设为true
+                    flage = true;
+                    //后续不在比较,跳出循环
+                    break;
+                }
+            }
+        //如果列表长度都不同,直接将标志量设为true
+        }else {
+            flage = true;
+        }
+        //如果标志量为真(传入的站码列表发生了变化)
+        if (flage) {
+            //为map注入新的属性值
+            allInfomationMap = getSomethingUtils.raPDayRtVoService.getAllRaPDayRtVoInformation(stcdList);
+        }
+        return allInfomationMap;
     }
 
 

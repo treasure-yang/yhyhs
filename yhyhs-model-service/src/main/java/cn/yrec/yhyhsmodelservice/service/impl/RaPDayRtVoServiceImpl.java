@@ -388,6 +388,7 @@ public class RaPDayRtVoServiceImpl implements RaPDayRtVoService {
                 TransFormUtils.getListRaPDayRtVoListByStringList(raPDayRtVoList, stcdList);
         //遍历站码列表进行构造外层Map
         for (String stcd : stcdList) {
+            System.out.println("正在构造"+stcd);
             //初始化内层Map
             Map<Date, RaPDayRtVo> raPDayRtVoMap = null;
             //遍历按照站码分类的列表

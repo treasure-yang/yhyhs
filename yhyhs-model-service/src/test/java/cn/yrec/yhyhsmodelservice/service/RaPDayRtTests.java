@@ -52,7 +52,7 @@ public class RaPDayRtTests {
 
     @Test
     void getTimes() {
-        Date date = DateUtils.transformStrTODate("2020/07/27");
+        Date date = DateUtils.transformStrTODate("2020/08/3");
         System.out.println(date.getTime());
 
     }
