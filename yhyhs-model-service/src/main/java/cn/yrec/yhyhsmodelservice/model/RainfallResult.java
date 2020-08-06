@@ -24,7 +24,7 @@ public class RainfallResult  implements Serializable {
     private Double totalRainfallQ; //总降雨量(单位:mm)
     private Double maxRainfall; //最大点雨量
     private Double beforeRainfallPoint; //前期雨量指数
-    private Double resemblance; //相似性(原型雨没有)
+    private Double resemblance; //相似性(原型雨为0)
 
     private String maxRainfallStcd; //最大点雨量的站码
     private List<Double> dateRainfallArea; //时段降雨笼罩面积(时间大的在前)

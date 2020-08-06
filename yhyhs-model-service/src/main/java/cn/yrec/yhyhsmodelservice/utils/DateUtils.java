@@ -13,7 +13,7 @@ import java.util.*;
  * @Created by yanglichen
  */
 public class DateUtils {
-    static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
     public static final Long ONE_DAY_MILLI_SECOND = 1000L * 24 * 60 *60;
 
     /**
@@ -226,16 +226,6 @@ public class DateUtils {
         return endTime;
     }
 
-    public static void main(String[] args) {
-        Date start = transformStrTODate("2020/7/15");
-        Date endDate = transformStrTODate("2020/7/20");
-        Date before15DayDate = getNextDateByTimeZone(start, 15);
-        List<Date> dateList = getDateListByStartDateAndEndDate(before15DayDate, start);
-        dateList.forEach(date->{
-            System.out.println(transformDateTOStr(date));
-        });
-
-    }
 
     /**
      * 方法描述: 根据开始日期, 结束日期得到一个包前包后的时间列表
@@ -254,5 +244,4 @@ public class DateUtils {
         } while (tempDate.getTime() <= endDate.getTime());
         return dateList;
     }
-
 }

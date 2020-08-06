@@ -7,7 +7,6 @@ import cn.yrec.yhyhsmodelservice.service.FindConformRainfallService;
 import cn.yrec.yhyhsmodelservice.utils.DateUtils;
 import cn.yrec.yhyhsmodelservice.utils.GetSomethingUtils;
 import cn.yrec.yhyhsmodelservice.utils.JsonResult;
-import cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -154,7 +154,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
     public List<RainfallResult> calculateTotalRainfallQ(List<RainfallResult> rainfallResultList) {
         List<RainfallResult> rainfallResults = new ArrayList<>();
         //遍历备选雨特征值计算结果列表
-        rainfallResultList.forEach(rainfallResult -> {
+        for (RainfallResult rainfallResult : rainfallResultList) {
             //降雨起始日
             Date rainfallEndDate = rainfallResult.getEndRainfallDate();
             //更新参数
@@ -162,8 +162,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
             //调用计算降雨特征值的方法计算特征值
             RainfallResult result = calculateSerivce.getRainfallResultByStcdList(rainfallResult.getRainfallParameters());
             rainfallResults.add(result);
-
-        });
+        }
         return rainfallResults;
     }
 
@@ -239,7 +238,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
         //构造新的结果集
         List<RainfallResult> rainfallResults = new ArrayList<>();
         //遍历备选雨特征值计算结果列表
-        rainfallResultList.forEach(rainfallResult -> {
+        for (RainfallResult rainfallResult : rainfallResultList) {
             //降雨结束的日期
             Date rainfallEndDate = rainfallResult.getEndRainfallDate();
             //更新参数
@@ -247,7 +246,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
             //调用计算降雨特征值的方法计算特征值
             RainfallResult result = calculateSerivce.getRainfallResult(rainfallResult.getRainfallParameters());
             rainfallResults.add(result);
-        });
+        }
         return rainfallResults;
     }
 
@@ -326,7 +325,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
             List<Date> tempList = rainfallDaysMap.get(value);
             if (tempList != null) {
                 //遍历历时中对应的数据
-                tempList.forEach(rainfallDate -> {
+                for (Date rainfallDate : tempList) {
                     RainfallResult result = new RainfallResult();
                     //封装降雨参数
                     result.setRainfallParameters(parameter);
@@ -338,14 +337,13 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
                     result.setEndRainfallDate(DateUtils.getAfterDateByTimeZone(rainfallDate, value));
                     //封装降雨时间间隔
                     rainfallResultSet.add(result);
-                });
+                }
             }
                /*根据历时容差寻找降雨的时候,
                  不做结果数量的限制,
                  有多少,存多少
                  后续根据雨量进行二次筛选
                 */
-
         }
         return rainfallResultSet;
     }
