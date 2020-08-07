@@ -244,4 +244,23 @@ public class DateUtils {
         } while (tempDate.getTime() <= endDate.getTime());
         return dateList;
     }
+
+    /**
+     * 方法描述: 将前端的格林威治时间转换为北京时间
+     * @author yanglichen
+     * @date 2020-08-07 09:59
+     * @param webDateString 从网页传入的格林威治时间:
+     *                      例如: 2017-10-06T16:00:00.000+0000
+     * @return 北京时间: 2017-10-07
+     **/
+    public static Date transformWebDateToBeijingDate(String webDateString){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS+Z");
+        String dateStr = "2017-10-06T16:00:00.000+0000".replace("0000", "UTC");
+        try {
+            return simpleDateFormat.parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

@@ -4,7 +4,6 @@ import cn.yrec.yhyhsmodelservice.model.RainfallParameters;
 import cn.yrec.yhyhsmodelservice.model.RainfallResult;
 import cn.yrec.yhyhsmodelservice.vo.RaPDayRtVo;
 
-import javax.xml.transform.Result;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +109,15 @@ public interface CalculateSerivce {
      * @return 计算模型需要的数据
      **/
     RainfallParameters getParametersByRequestBody(Map<String, Object> requestBodyMap);
+
+    /**
+     * 方法描述: 根前端传入的原型雨数据,构造原型雨对象
+     * @author yanglichen
+     * @date 2020-08-07 08:35
+     * @param requestBodyMap 前端传入的Map数据
+     * @return 原型雨实例
+     **/
+    RainfallResult getRainfallResultByRequestMap(Map<String, Object> requestBodyMap);
 
     /**
      * 方法描述: 根据某一场降雨得到在该场次降雨中,

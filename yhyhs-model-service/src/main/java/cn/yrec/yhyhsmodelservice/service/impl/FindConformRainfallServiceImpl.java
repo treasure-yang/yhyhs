@@ -299,6 +299,36 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
     }
 
     /**
+     * 方法描述: 根据选定的原型雨寻找备选雨列表
+     *
+     * @param prototypeRainfall 原型雨列表
+     * @return 备选雨列表
+     * @author yanglichen
+     * @date 2020-08-07 09:10
+     **/
+    @Override
+    public List<RainfallResult> findRainfallListByRainfallResult(RainfallResult prototypeRainfall) {
+        //得到历时和日期的映射Map
+        Map<Integer, List<Date>> resultMap =
+                findConfirmRainfallTakeTimeAndDateByRainfallResult(prototypeRainfall);
+        //得到备选雨实例列表
+        List<RainfallResult> rainfallResults =
+                getConformRainfallSetByRainfallMap(prototypeRainfall, resultMap);
+
+        //计算降雨特征值
+        List<RainfallResult> resultList = calAllCulate(rainfallResults);
+
+        //得到降雨量容差值
+        Double rainfallQTolerance = prototypeRainfall.getRainfallParameters().getRainfallQTolerance();
+
+        //根据总降雨量进行过滤
+        List<RainfallResult> filterQResultList =
+                filterRainfallResultByRainfallQ(resultList, prototypeRainfall, rainfallQTolerance);
+        //得到按照相似性排序的备选雨列表
+        return calculateSerivce.sortRainfallResultListByresesmblance(filterQResultList, prototypeRainfall);
+    }
+
+    /**
      * 方法描述: 通过降雨历时的值,重Map中找到符合降雨历时范围的数据
      * 并存放在Set<RainfallResult> 用Set是为了防止数据重复
      *

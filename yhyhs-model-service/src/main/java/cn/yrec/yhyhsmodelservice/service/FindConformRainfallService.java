@@ -81,4 +81,13 @@ public interface FindConformRainfallService {
      * @return 备选雨列表
      **/
     List<RainfallResult> calAllCulate(List<RainfallResult> rainfallResultList);
+
+    /**
+     * 方法描述: 根据选定的原型雨寻找备选雨列表
+     * @author yanglichen
+     * @date 2020-08-07 09:10
+     * @param prototypeRainfall 原型雨列表
+     * @return 备选雨列表
+     **/
+    List<RainfallResult> findRainfallListByRainfallResult(RainfallResult prototypeRainfall);
 }

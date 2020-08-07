@@ -497,6 +497,68 @@ public class CalculateSerivceImpl implements CalculateSerivce {
     }
 
     /**
+     * 方法描述: 根前端传入的原型雨数据,构造原型雨对象
+     *
+     * @param requestBodyMap 前端传入的Map数据
+     * @return 原型雨实例
+     * @author yanglichen
+     * @date 2020-08-07 08:35
+     **/
+    @Override
+    public RainfallResult getRainfallResultByRequestMap(Map<String, Object> requestBodyMap) {
+        //构造对象
+        RainfallResult rainfallResult = new RainfallResult();
+        //得到原型雨的属性
+        String rainfallDateStr = requestBodyMap.get("rainfallDate")+"";
+        Date rainfallDate = DateUtils.transformWebDateToBeijingDate(rainfallDateStr);
+
+        String endRainfallDateStr = requestBodyMap.get("endRainfallDate")+"";
+
+        Date endRainfallDate = DateUtils.transformWebDateToBeijingDate(endRainfallDateStr);
+        Integer rainfallTakeTime = (Integer) requestBodyMap.get("rainfallTakeTime");
+        Double totalRainfallArea = (Double) requestBodyMap.get("totalRainfallArea");
+        Double totalRainfallQ = (Double) requestBodyMap.get("totalRainfallQ");
+        Double maxRainfall = (Double) requestBodyMap.get("maxRainfall");
+        Double beforeRainfallPoint = (Double) requestBodyMap.get("beforeRainfallPoint");
+        Double resemblance = (Double) requestBodyMap.get("resemblance");
+        String maxRainfallStcd = requestBodyMap.get("maxRainfallStcd")+"";
+        List<Double> dateRainfallArea = (List<Double>) requestBodyMap.get("dateRainfallArea");
+
+        //封装原型雨的属性
+        rainfallResult.setRainfallDate(rainfallDate);
+        rainfallResult.setEndRainfallDate(endRainfallDate);
+        rainfallResult.setRainfallTakeTime(rainfallTakeTime);
+        rainfallResult.setTotalRainfallArea(totalRainfallArea);
+        rainfallResult.setTotalRainfallQ(totalRainfallQ);
+        rainfallResult.setMaxRainfall(maxRainfall);
+        rainfallResult.setBeforeRainfallPoint(beforeRainfallPoint);
+        //相似值不需要封装(设为null就行了)
+        rainfallResult.setResemblance(null);
+        rainfallResult.setMaxRainfallStcd(maxRainfallStcd);
+        rainfallResult.setDateRainfallArea(dateRainfallArea);
+        //得到降雨参数的Map
+        Map<String, Object> rainfallParametersMap = (Map<String, Object>) requestBodyMap.get("rainfallParameters");
+        //从降雨参数的Map得到降雨参数数据
+        List<String> stcdList = (List<String>) rainfallParametersMap.get("stcdList");
+        Integer timeInterval = (Integer) rainfallParametersMap.get("timeInterval");
+        Double rainfallThreshold = (Double) rainfallParametersMap.get("rainfallThreshold");
+        Double rainfallThresholdFoArea = (Double) rainfallParametersMap.get("rainfallThresholdFoArea");
+        Integer rainfallTolerance = (Integer) rainfallParametersMap.get("rainfallTolerance");
+        Double rainfallQTolerance = (Double) rainfallParametersMap.get("rainfallQTolerance");
+        //封装参数数据
+        RainfallParameters rainfallParameters = new RainfallParameters();
+        rainfallParameters.setTimeInterval(timeInterval);
+        rainfallParameters.setStcdList(stcdList);
+        rainfallParameters.setRainfallThresholdFoArea(rainfallThresholdFoArea);
+        rainfallParameters.setRainfallThreshold(rainfallThreshold);
+        rainfallParameters.setRainfallTolerance(rainfallTolerance);
+        rainfallParameters.setRainfallQTolerance(rainfallQTolerance);
+        //封装降雨参数数据
+        rainfallResult.setRainfallParameters(rainfallParameters);
+        return rainfallResult;
+    }
+
+    /**
      * 方法描述: 根据某一场降雨得到在该场次降雨中,
      * 每个站码所记录的降雨量的总和,并组成一个Map
      *
@@ -612,7 +674,7 @@ public class CalculateSerivceImpl implements CalculateSerivce {
     @Override
     public List<RainfallResult> sortRainfallResultListByresesmblance(
             List<RainfallResult> rainfallResultList, RainfallResult prototypeRainfallResult) {
-
+        System.out.println();
         //得到站码列表
         List<String> stcdList = prototypeRainfallResult.getRainfallParameters().getStcdList();
         //得到结果大集合
