@@ -663,7 +663,7 @@ public class CalculateSerivceImpl implements CalculateSerivce {
     }
 
     /**
-     * 方法描述: 根据相似度对备选雨结果进行排序
+     * 方法描述: 根据原型雨计算相似度对备选雨结果进行排序
      *
      * @param rainfallResultList      备选雨列表
      * @param prototypeRainfallResult 原型雨
@@ -674,7 +674,6 @@ public class CalculateSerivceImpl implements CalculateSerivce {
     @Override
     public List<RainfallResult> sortRainfallResultListByresesmblance(
             List<RainfallResult> rainfallResultList, RainfallResult prototypeRainfallResult) {
-        System.out.println();
         //得到站码列表
         List<String> stcdList = prototypeRainfallResult.getRainfallParameters().getStcdList();
         //得到结果大集合

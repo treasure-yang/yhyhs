@@ -74,6 +74,23 @@ public interface FindConformRainfallService {
             List<RainfallResult> rainfallResultList, RainfallResult prototypeRainfall, Double rainfallQTolerance);
 
     /**
+     * 方法描述: 根据降雨历时和总降雨量寻找备选雨
+     *  (如果根据给定的条件找出的降雨场次数 < 20场次, 首先只增加历时范围(最大到3)
+     *   如果历时增加到了3,备选雨场次数 < 20 ,增加总雨量的控制参数(每次0.05 最大增加到0.5)
+     *   以上过程中只要当备选雨场次数 >= 20 ,则随时结束循环
+     * @param rainfallResultList 备选雨列表
+     * @param prototypeRainfall 原型雨实例
+     * @param rainfallTaketimes 历时范围
+     * @param rainfallQTolerance 降雨量容差
+     * @author yanglichen
+     * @date 2020-08-11 08:06
+     * @return 根据降雨相似度排序后的备选雨列表(只要前5条)
+     **/
+    List<RainfallResult> filterRainfallResultByTaketimesAndRainfallQ(
+            List<RainfallResult> rainfallResultList, RainfallResult prototypeRainfall,
+            int rainfallTaketimes, double rainfallQTolerance);
+
+    /**
      * 方法描述: 计算所有的备选雨的特征值
      * @author yanglichen
      * @date 2020-07-27 10:36
@@ -90,4 +107,6 @@ public interface FindConformRainfallService {
      * @return 备选雨列表
      **/
     List<RainfallResult> findRainfallListByRainfallResult(RainfallResult prototypeRainfall);
+
+
 }

@@ -124,7 +124,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
     }
 
     /**
-     * 方法描述: 通过历时和降雨起始日组成的Map得到10场次的备选雨
+     * 方法描述: 通过历时和降雨起始日组成的Map得到
      *
      * @param rainfallMap    历时和降雨起始日组成的Map
      * @param rainfallResult 原型雨实例
@@ -299,6 +299,113 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
     }
 
     /**
+     * 方法描述: 根据降雨历时和总降雨量寻找备选雨
+     * (如果根据给定的条件找出的降雨场次数 < 20场次, 首先只增加历时范围(最大到3)
+     * 如果历时增加到了3,备选雨场次数 < 20 ,增加总雨量的控制参数(每次0.05 最大增加到0.5)
+     * 以上过程中只要当备选雨场次数 >= 20 ,则随时结束循环
+     *
+     * @param rainfallResultList 备选雨列表
+     * @param prototypeRainfall  原型雨实例
+     * @param rainfallTaketimes  历时范围
+     * @param rainfallQTolerance 降雨量容差
+     * @return 根据降雨相似度排序后的备选雨列表(只要前5条)
+     * @author yanglichen
+     * @date 2020-08-11 08:06
+     **/
+    @Override
+    public List<RainfallResult> filterRainfallResultByTaketimesAndRainfallQ(
+            List<RainfallResult> rainfallResultList, RainfallResult prototypeRainfall,
+            int rainfallTaketimes, double rainfallQTolerance) {
+        //构造结果集
+        List<RainfallResult> resultList = new ArrayList<>();
+        //得到历时和降雨日期对应的Map
+        Map<Integer, List<Date>> mapByRainfallTaketimeAndRainfallDate =
+                findConfirmRainfallTakeTimeAndDateByRainfallResult(prototypeRainfall);
+        while (true) {
+            //得到备选雨列表
+            List<RainfallResult> rainfallResults =
+                    getRainfallListByRainfallTakeTimeAndRainfallQ(
+                            mapByRainfallTaketimeAndRainfallDate, prototypeRainfall,
+                            rainfallTaketimes, rainfallQTolerance);
+            //备选雨列表添加到List中
+            if (resultList.size()==0) {
+                resultList.addAll(rainfallResults);
+            }
+            //遍历得到的备选雨列表
+            for (RainfallResult rainfallResult : rainfallResults) {
+                //得到降雨日的毫秒数
+                long startDate = rainfallResult.getRainfallDate().getTime();
+                //设置标志量
+                boolean flage = true;
+                //遍历结果集中的所有元素
+                for (RainfallResult result : resultList) {
+                    //得到降雨日的毫秒数
+                    long resultStartDate = result.getRainfallDate().getTime();
+                    //判断是否相等
+                    if (resultStartDate==startDate) {
+                        flage = false;
+                        break;
+                    }
+                }
+                if (flage) {
+                    resultList.add(rainfallResult);
+                }
+            }
+
+            //判断set中的数量的大小是否<20
+            if (resultList.size() < 20) {
+                //判断历时范围是否<3
+                if (rainfallTaketimes < 3) {
+                    //对历时进行加一
+                    rainfallTaketimes++;
+                } else {
+                    //对雨量控制参数+0.05
+                    rainfallQTolerance += 0.05;
+                }
+                //判断小于20场中的跳出情况(历时范围达到3, 雨量容差达到0.5)
+                if (rainfallTaketimes >= 3 && rainfallQTolerance >= 0.5) {
+                    break;
+                }
+            }else{
+                //如果数量已经达到了20就直接跳出
+                break;
+            }
+        }
+        /* 当程序运行到这里set中已经有了一定的数据
+        * 此时数据有两种情况
+        * 1.条件没跑完就已经找到了20条
+        * 2.条件跑到头了,但是还没有20条,可能只有10条甚至更少
+        * 即将对set中的所有数据进行相似值的计算,并输出到List中
+        */
+        //根据原型雨对所有备选雨计算相似度
+        List<RainfallResult> rainfallResults =
+                calculateSerivce.sortRainfallResultListByresesmblance(resultList, prototypeRainfall);
+        //得到最低的相似度(最后的哪一个就是相似度最低的)
+        double minLookLike = rainfallResults.get(rainfallResults.size()-1).getResemblance();
+        //遍历计算相似度
+        for (RainfallResult rainfallResult : rainfallResults) {
+            double resemblance =  rainfallResult.getResemblance();
+            double lookLikePoint = (1-(resemblance/minLookLike))*100;
+            System.err.println("相似值为: "+ resemblance+ " 相似度为: "+lookLikePoint);
+            //重新赋值回去
+            rainfallResult.setResemblance(lookLikePoint);
+        }
+        //给最后一个删了
+        rainfallResults.remove(rainfallResults.size()-1);
+        //只要前10场次
+        List<RainfallResult> finalResult = new ArrayList<>();
+        //判断总场次,如果不足10场次直接返回
+        if (rainfallResults.size()<=10) {
+            return rainfallResults;
+        }
+        //比10场次多就要前10场次
+        for (int i = 0; i < 10; i++) {
+            finalResult.add(rainfallResults.get(i));
+        }
+        return finalResult;
+    }
+
+    /**
      * 方法描述: 根据选定的原型雨寻找备选雨列表
      *
      * @param prototypeRainfall 原型雨列表
@@ -320,13 +427,85 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
 
         //得到降雨量容差值
         Double rainfallQTolerance = prototypeRainfall.getRainfallParameters().getRainfallQTolerance();
+        //得到历时范围
+        int rainfallTaketims =  prototypeRainfall.getRainfallParameters().getTimeInterval();
 
         //根据总降雨量进行过滤
         List<RainfallResult> filterQResultList =
-                filterRainfallResultByRainfallQ(resultList, prototypeRainfall, rainfallQTolerance);
+//                filterRainfallResultByRainfallQ(resultList, prototypeRainfall, rainfallQTolerance);
+                    filterRainfallResultByTaketimesAndRainfallQ(resultList, prototypeRainfall, rainfallTaketims, rainfallQTolerance);
         //得到按照相似性排序的备选雨列表
-        return calculateSerivce.sortRainfallResultListByresesmblance(filterQResultList, prototypeRainfall);
+//        return calculateSerivce.sortRainfallResultListByresesmblance(filterQResultList, prototypeRainfall);
+        return filterQResultList;
     }
+
+
+    /**
+     * 方法描述: 根据给定的降雨历时,降雨总雨量范围得到降雨列表
+     * @author yanglichen
+     * @date 2020-08-11 08:23
+     * @param prototypeRainfall  原型雨实例
+     * @param rainfallTaketimes  历时范围
+     * @param rainfallQTolerance 降雨量容差
+     * @return 备选雨列表
+     **/
+    private List<RainfallResult> getRainfallListByRainfallTakeTimeAndRainfallQ(
+            Map<Integer, List<Date>> mapByRainfallTaketimeAndRainfallDate, RainfallResult prototypeRainfall,
+            int rainfallTaketimes, double rainfallQTolerance) {
+        //原型雨的降雨降雨参数
+        RainfallParameters parameter = prototypeRainfall.getRainfallParameters();
+        //得到原型雨的历时
+        int prototypeRainfallTaketimes = prototypeRainfall.getRainfallTakeTime();
+        //根据给定的降雨历时范围和原型雨的历时构造一个数组
+        int[] rainfallTaketimeArray =
+                getRainfallTaketimesToleranceArray(prototypeRainfallTaketimes, rainfallTaketimes);
+        List<RainfallResult> taketimesResult = new ArrayList<>();
+        //根据给定的降雨历时范围和余量容差,直接进行过滤
+        for (int taketime : rainfallTaketimeArray) {
+            //根据历时得到降雨开始日期的列表
+            List<Date> rainfallStartDateList = mapByRainfallTaketimeAndRainfallDate.get(taketime);
+            if (rainfallStartDateList != null) {
+                //遍历日期列表
+                for (Date rainfallStartDate : rainfallStartDateList) {
+                    //构造备选雨实例
+                    RainfallResult rainfallResult = new RainfallResult();
+                    //封装降雨参数
+                    rainfallResult.setRainfallParameters(parameter);
+                    //封装降雨起始日
+                    rainfallResult.setRainfallDate(rainfallStartDate);
+                    //封装降雨历时
+                    rainfallResult.setRainfallTakeTime(taketime);
+                    //根据降雨起始日和历时得到降雨截止日并封装
+                    Date endRainfallDate = DateUtils.getAfterDateByTimeZone(rainfallStartDate, taketime);
+                    rainfallResult.setEndRainfallDate(endRainfallDate);
+                    //添加到历时的列表中
+                    taketimesResult.add(rainfallResult);
+                }
+            }
+        }
+        //为根据历时筛选出来的列表计算总降雨量
+        List<RainfallResult> rainfallResults = calAllCulate(taketimesResult);
+        //得到备选雨的总降雨量
+        double rainfallQ = prototypeRainfall.getTotalRainfallQ();
+        //得到根据总雨量阈值得到的总雨量的最小值
+        double rainfallMinQ = rainfallQ * (1 - rainfallQTolerance);
+        //得到根据总雨量阈值得到的总雨量的最大值
+        double rainfallMaxQ = rainfallQ * (1 + rainfallQTolerance);
+        //构造最终结果集
+        List<RainfallResult> finalRainfallResultList = new ArrayList<>();
+        //遍历根据历时筛选出来的列表,将雨量不满足的备选雨进行过滤
+        for (RainfallResult rainfallResult : rainfallResults) {
+            //得到备选雨的降雨量
+            double rainfallResultQ = rainfallResult.getTotalRainfallQ();
+            //如果 备选雨雨量 >= 最小值 并且 备选雨雨量 <= 最大值
+            if (rainfallResultQ >= rainfallMinQ && rainfallResultQ <= rainfallMaxQ) {
+                finalRainfallResultList.add(rainfallResult);
+            }
+        }
+        return finalRainfallResultList;
+    }
+
+
 
     /**
      * 方法描述: 通过降雨历时的值,重Map中找到符合降雨历时范围的数据

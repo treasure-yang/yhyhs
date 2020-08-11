@@ -62,10 +62,8 @@ public class FindRainfallController {
         //得到按照相似性排序的备选雨列表
         List<RainfallResult> rainfallResultList =
                 findConformRainfallService.findRainfallListByRainfallResult(prototypeRainfall);
-
         System.out.println("相似性排序如下");
         rainfallResultList.forEach(rainfall->{
-//            rainfall.setRainfallParameters(null);
             System.out.println("相似性: "+rainfall.getResemblance());
         });
         return new JsonResult<>(200, rainfallResultList);
