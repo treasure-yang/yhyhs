@@ -645,11 +645,13 @@ public class CalculateSerivceImpl implements CalculateSerivce {
             Map<String, Map<Date, RaPDayRtVo>> allInformationMap) {
         List<RaPDayRtVo> raPDayRtVoList = new ArrayList<>();
         //遍历第一层Map
+        int i = 0;
         for (Map.Entry<String, Map<Date, RaPDayRtVo>> firMap : allInformationMap.entrySet()) {
             if (firMap.getValue() != null) {
                 //根据第一层的value得到第二层的Map
                 Map<Date, RaPDayRtVo> secMap = firMap.getValue();
                 //遍历第二层的Map
+                i++;
                 for (Map.Entry<Date, RaPDayRtVo> nextMap : secMap.entrySet()) {
                     if (nextMap.getValue() != null) {
                         RaPDayRtVo raPDayRtVo = nextMap.getValue();
@@ -659,6 +661,8 @@ public class CalculateSerivceImpl implements CalculateSerivce {
                 }
             }
         }
+        System.out.println("MAP的长度: "+i);
+        System.err.println("LIST的长度: "+raPDayRtVoList.size());
         return raPDayRtVoList;
     }
 

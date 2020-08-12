@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.unit.DataUnit;
 
 import java.util.*;
 
@@ -96,6 +97,8 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
         Map<Date, Integer> dateCountMap = raPDayRtService.getRainfallDateCount(stcdList, rainfallThreshold);
         Date endDate = raPDayRtService.getEndRainfallDate(dateCountMap);
         while (true) {
+//            System.err.println("结束的日期为:"+ DateUtils.transformDateTOStr(endDate));
+//            System.err.println("正在寻找备选雨");
             //得到降雨开始的日期
             Date beforRainfallStartDate = raPDayRtService
                     .findRainfallStartDate(dateCountMap, endRainfallDate, timeInterval);
@@ -120,6 +123,7 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
             }
             endRainfallDate.setTime(nextRainfallEndDate.getTime());
         }
+//        System.err.println("map中的数据长度为: "+map.size());
         return map;
     }
 
@@ -387,8 +391,8 @@ public class FindConformRainfallServiceImpl implements FindConformRainfallServic
             double resemblance =  rainfallResult.getResemblance();
             double lookLikePoint = (1-(resemblance/minLookLike))*100;
             System.err.println("相似值为: "+ resemblance+ " 相似度为: "+lookLikePoint);
-            //重新赋值回去
-            rainfallResult.setResemblance(lookLikePoint);
+            //赋值相似度
+            rainfallResult.setLookLikePoint(lookLikePoint);
         }
         //给最后一个删了
         rainfallResults.remove(rainfallResults.size()-1);
